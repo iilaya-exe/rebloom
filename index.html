@@ -13,7 +13,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://sendabouquet.vercel.app/">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23e8344a' d='M16 29.5S3.5 21.6 3.5 12.6A6.6 6.6 0 0 1 16 9.4a6.6 6.6 0 0 1 12.5 3.2c0 9-12.5 16.9-12.5 16.9z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -233,8 +233,8 @@
 </main>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="/qrcode.js" defer></script>
-<script src="/heartqr.js" defer></script>
+<script src="qrcode.js" defer></script>
+<script src="heartqr.js" defer></script>
 <script>
 (() => {
   "use strict";
@@ -242,10 +242,13 @@
   const to = $("to"), from = $("from"), note = $("note");
   const pv = $("pv");
   const clean = (v, n) => v.replace(/\s+/g, " ").trim().slice(0, n);
+  // static hosting (GitHub Pages, served from a subpath) has no /for, /f or /made rewrites,
+  // so there we link straight to bouquet.html, relative to this page
+  const STATIC = /\.github\.io$/.test(location.hostname);
 
   // live preview: the real bouquet page in preview mode, updated as they type
   const initial = new URLSearchParams({ preview: "1", to: "", from: "", note: "" });
-  pv.src = "/for?" + initial.toString();
+  pv.src = "bouquet.html?" + initial.toString();
   let pvReady = false;
   pv.addEventListener("load", () => { pvReady = true; pushPreview(); });
   let tmr = 0;
@@ -267,7 +270,7 @@
     let q = "t=" + enc(clean(to.value, 40));
     if (clean(from.value, 40)) q += "&f=" + enc(clean(from.value, 40));
     if (clean(note.value, 140)) q += "&n=" + enc(clean(note.value, 140));
-    return location.origin + "/f?" + q;
+    return STATIC ? new URL("bouquet.html?" + q, location.href).href : location.origin + "/f?" + q;
   }
 
   function toast(msg) {
@@ -293,7 +296,7 @@
     $("result").hidden = false;
     $("result").scrollIntoView({ behavior: "smooth", block: "center" });
     // counted as a page view of /made, so analytics shows how many bouquets were created
-    try { history.replaceState(null, "", "/made"); window.va && window.va("pageview", { route: "/made", path: "/made" }); } catch (err) {}
+    if (!STATIC) try { history.replaceState(null, "", "/made"); window.va && window.va("pageview", { route: "/made", path: "/made" }); } catch (err) {}
   });
 
   $("copy").addEventListener("click", () => {
